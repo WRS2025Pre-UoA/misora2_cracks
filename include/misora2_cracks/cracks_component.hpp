@@ -40,7 +40,7 @@ private:
 
     rclcpp::Subscription<MyAdaptedType>::SharedPtr receive_image_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr crack_size_publisher_;
-    rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr result_image_publisher_;
+    rclcpp::Publisher<MyAdaptedType>::SharedPtr result_image_publisher_;
 };
 
 } // namespace component_cracks

@@ -8,7 +8,7 @@ EvaluateCracks::EvaluateCracks(const rclcpp::NodeOptions &options)
     receive_image_ = this->create_subscription<MyAdaptedType>("cracks_image",10,std::bind(&EvaluateCracks::update_image_callback,this,std::placeholders::_1));
     
     crack_size_publisher_ = this->create_publisher<std_msgs::msg::String>("cracks_result_data",10);
-    result_image_publisher_ = this->create_publisher<sensor_msgs::msg::Image>("cracks_result_image",10);//不要だったらコメントアウト
+    result_image_publisher_ = this->create_publisher<MyAdaptedType>("cracks_result_image",10);//不要だったらコメントアウト
 
     // cv::Mat型のreceive_imageを入力としたメーター値検出関数 返り値std::pair<string,cv::Mat>func(cv::Mat ) 画像の出力いらないかも
     // auto [crack_size, result_image] = func(receive_image)
@@ -19,6 +19,13 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
 
     RCLCPP_INFO_STREAM(this->get_logger(),"Receive image address: " << &(msg->data));
     
+    crack_size = "1.0,0.4";
+    std_msgs::msg::String msg_S;
+    msg_S.data = crack_size;
+    crack_size_publisher_->publish(msg_S);
+
+
+    result_image_publisher_->publish(receive_image);
 }
 
 } //namespace component_cracks
