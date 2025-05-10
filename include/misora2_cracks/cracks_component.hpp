@@ -7,6 +7,8 @@
 #include <chrono>
 #include <functional>
 #include <algorithm>
+#include <sstream>
+#include <iomanip>
 
 #include <rclcpp/clock.hpp>
 #include <rclcpp/time.hpp>
@@ -29,14 +31,14 @@ class EvaluateCracks : public rclcpp::Node
 public:
     using MyAdaptedType = rclcpp::TypeAdapter<cv::Mat, sensor_msgs::msg::Image>;
 
-    std::string crack_size;
-    cv::Mat result_image, receive_image;
+    bool flag = false;
 
     explicit EvaluateCracks(const rclcpp::NodeOptions &options);
     EvaluateCracks() : EvaluateCracks(rclcpp::NodeOptions{}) {}
 
 private:
     void update_image_callback(const std::unique_ptr<cv::Mat> msg);
+    std::string to_string_with_precision(double value, int precision);
 
     rclcpp::Subscription<MyAdaptedType>::SharedPtr receive_image_;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr crack_size_publisher_;
