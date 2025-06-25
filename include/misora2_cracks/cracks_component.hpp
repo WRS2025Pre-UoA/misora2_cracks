@@ -21,6 +21,8 @@
 #include <rclcpp/type_adapter.hpp>
 
 #include "misora2_cracks/cv_mat_type_adapter.hpp"
+#include "misora2_cracks/detection.hpp"
+
 
 using namespace std::chrono_literals;
 
@@ -33,6 +35,11 @@ public:
 
     bool flag = false;
 
+    // クラック検出の設定---------------------
+    AutoBackendOnnx model;
+    std::vector<cv::Scalar> colors;
+    std::unordered_map<int, std::string> names;
+    // -------------------------------------
     explicit EvaluateCracks(const rclcpp::NodeOptions &options);
     EvaluateCracks() : EvaluateCracks(rclcpp::NodeOptions{}) {}
 
