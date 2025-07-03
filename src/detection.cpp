@@ -45,7 +45,7 @@ void Detection::plot_masks(cv::Mat img, std::vector<YoloResults>& result, std::v
         float left, top;
         left = result[i].bbox.x;
         top = result[i].bbox.y;
-        int color_num = i;
+        // int color_num = i;
         int& class_idx = result[i].class_idx;
         rectangle(img, result[i].bbox, color[result[i].class_idx], 2);
 
@@ -80,85 +80,85 @@ void Detection::plot_masks(cv::Mat img, std::vector<YoloResults>& result, std::v
     resize(img, img, img.size());
 }
 
-void Detection::plot_keypoints(cv::Mat& image, const std::vector<YoloResults>& results, const cv::Size& shape) {
+// void Detection::plot_keypoints(cv::Mat& image, const std::vector<YoloResults>& results, const cv::Size& shape) {
 
-    int radius = 5;
-    bool drawLines = true;
+//     int radius = 5;
+//     bool drawLines = true;
 
-    if (results.empty()) {
-        return;
-    }
+//     if (results.empty()) {
+//         return;
+//     }
 
-    std::vector<cv::Scalar> limbColorPalette;
-    std::vector<cv::Scalar> kptColorPalette;
+//     std::vector<cv::Scalar> limbColorPalette;
+//     std::vector<cv::Scalar> kptColorPalette;
 
-    for (int index : limbColorIndices) {
-        limbColorPalette.push_back(posePalette[index]);
-    }
+//     for (int index : limbColorIndices) {
+//         limbColorPalette.push_back(posePalette[index]);
+//     }
 
-    for (int index : kptColorIndices) {
-        kptColorPalette.push_back(posePalette[index]);
-    }
+//     for (int index : kptColorIndices) {
+//         kptColorPalette.push_back(posePalette[index]);
+//     }
 
-    for (const auto& res: results) {
-        auto keypoint = res.keypoints;
-        bool isPose = keypoint.size() == 51;  // numKeypoints == 17 && keypoints[0].size() == 3;
-        drawLines &= isPose;
+//     for (const auto& res: results) {
+//         auto keypoint = res.keypoints;
+//         bool isPose = keypoint.size() == 51;  // numKeypoints == 17 && keypoints[0].size() == 3;
+//         drawLines &= isPose;
 
-        // draw points
-        for (int i = 0; i < 17; i++) {
-            int idx = i * 3;
-            int x_coord = static_cast<int>(keypoint[idx]);
-            int y_coord = static_cast<int>(keypoint[idx + 1]);
+//         // draw points
+//         for (int i = 0; i < 17; i++) {
+//             int idx = i * 3;
+//             int x_coord = static_cast<int>(keypoint[idx]);
+//             int y_coord = static_cast<int>(keypoint[idx + 1]);
 
-            if (x_coord % shape.width != 0 && y_coord % shape.height != 0) {
-                if (keypoint.size() == 3) {
-                    float conf = keypoint[2];
-                    if (conf < 0.5) {
-                        continue;
-                    }
-                }
-                cv::Scalar color_k = isPose ? kptColorPalette[i] : cv::Scalar(0, 0,
-                                                                               255);  // Default to red if not in pose mode
-                cv::circle(image, cv::Point(x_coord, y_coord), radius, color_k, -1, cv::LINE_AA);
-            }
-        }
-        // draw lines
-        if (drawLines) {
-            for (size_t i = 0; i < skeleton.size(); i++) {
-                const std::vector<int> &sk = skeleton[i];
-                int idx1 = sk[0] - 1;
-                int idx2 = sk[1] - 1;
+//             if (x_coord % shape.width != 0 && y_coord % shape.height != 0) {
+//                 if (keypoint.size() == 3) {
+//                     float conf = keypoint[2];
+//                     if (conf < 0.5) {
+//                         continue;
+//                     }
+//                 }
+//                 cv::Scalar color_k = isPose ? kptColorPalette[i] : cv::Scalar(0, 0,
+//                                                                                255);  // Default to red if not in pose mode
+//                 cv::circle(image, cv::Point(x_coord, y_coord), radius, color_k, -1, cv::LINE_AA);
+//             }
+//         }
+//         // draw lines
+//         if (drawLines) {
+//             for (size_t i = 0; i < skeleton.size(); i++) {
+//                 const std::vector<int> &sk = skeleton[i];
+//                 int idx1 = sk[0] - 1;
+//                 int idx2 = sk[1] - 1;
 
-                int idx1_x_pos = idx1 * 3;
-                int idx2_x_pos = idx2 * 3;
+//                 int idx1_x_pos = idx1 * 3;
+//                 int idx2_x_pos = idx2 * 3;
 
-                int x1 = static_cast<int>(keypoint[idx1_x_pos]);
-                int y1 = static_cast<int>(keypoint[idx1_x_pos + 1]);
-                int x2 = static_cast<int>(keypoint[idx2_x_pos]);
-                int y2 = static_cast<int>(keypoint[idx2_x_pos + 1]);
+//                 int x1 = static_cast<int>(keypoint[idx1_x_pos]);
+//                 int y1 = static_cast<int>(keypoint[idx1_x_pos + 1]);
+//                 int x2 = static_cast<int>(keypoint[idx2_x_pos]);
+//                 int y2 = static_cast<int>(keypoint[idx2_x_pos + 1]);
 
-                float conf1 = keypoint[idx1_x_pos + 2];
-                float conf2 = keypoint[idx2_x_pos + 2];
+//                 float conf1 = keypoint[idx1_x_pos + 2];
+//                 float conf2 = keypoint[idx2_x_pos + 2];
 
-                // Check confidence thresholds
-                if (conf1 < 0.5 || conf2 < 0.5) {
-                    continue;
-                }
+//                 // Check confidence thresholds
+//                 if (conf1 < 0.5 || conf2 < 0.5) {
+//                     continue;
+//                 }
 
-                // Check if positions are within bounds
-                if (x1 % shape.width == 0 || y1 % shape.height == 0 || x1 < 0 || y1 < 0 ||
-                    x2 % shape.width == 0 || y2 % shape.height == 0 || x2 < 0 || y2 < 0) {
-                    continue;
-                }
+//                 // Check if positions are within bounds
+//                 if (x1 % shape.width == 0 || y1 % shape.height == 0 || x1 < 0 || y1 < 0 ||
+//                     x2 % shape.width == 0 || y2 % shape.height == 0 || x2 < 0 || y2 < 0) {
+//                     continue;
+//                 }
 
-                // Draw a line between keypoints
-                cv::Scalar color_limb = limbColorPalette[i];
-                cv::line(image, cv::Point(x1, y1), cv::Point(x2, y2), color_limb, 2, cv::LINE_AA);
-            }
-        }
-    }
-}
+//                 // Draw a line between keypoints
+//                 cv::Scalar color_limb = limbColorPalette[i];
+//                 cv::line(image, cv::Point(x1, y1), cv::Point(x2, y2), color_limb, 2, cv::LINE_AA);
+//             }
+//         }
+//     }
+// }
 
 std::tuple<cv::Mat, cv::Mat> Detection::plot_results(cv::Mat img, std::vector<YoloResults>& results,
                   std::vector<cv::Scalar> color, std::unordered_map<int, std::string>& names,
@@ -189,7 +189,7 @@ std::tuple<cv::Mat, cv::Mat> Detection::plot_results(cv::Mat img, std::vector<Yo
     for (const auto& res : results) {
         float left = res.bbox.x;
         float top = res.bbox.y;
-        int color_num = res.class_idx;
+        // int color_num = res.class_idx;
 
         // Draw bounding box
         rectangle(img, res.bbox, color[res.class_idx], 2);
