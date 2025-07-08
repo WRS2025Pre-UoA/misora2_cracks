@@ -41,7 +41,8 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
             );
             auto [trimming_image, result_image] = Detection::plot_results(receive_image, objs, colors, names, receive_image.size());
             if(trimming_image.channels() == 1) std::cout << "Not found" << std::endl;
-            else std::cout << "trimmed: " << trimming_image.size() << std::endl;
+            else {
+                std::cout << "trimmed: " << trimming_image.size() << std::endl;
             // auto[result_image, trimming_image] = func1(receive_image); // 成功：検出したテストピースを囲んだ画像、切り抜いた画像　失敗：黒画像ｘ２
             // if( result_image.channels() != 1 and trimming_image.channels() != 1 ){ // 検出成功時
             //     auto[crack_width, crack_length] = func2(trimming_image); // 見つからなかった場合 [0.0,0.0] 線の幅と長さ　double
@@ -54,14 +55,16 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
             //     result_image_publisher_->publish(result_image);
             //     flag = true;
             // }else RCLCPP_INFO_STREAM(this->get_logger(), "Couldn't find meter");
-            // テスト用-------------------------------------------
-            std_msgs::msg::String msg_S;
-            msg_S.data = "1.0,0.04";
-            crack_size_publisher_->publish(msg_S);
-            result_image_publisher_->publish(receive_image);
-            RCLCPP_INFO_STREAM(this->get_logger(),"Publish: "<< receive_image.size() );
-            flag = true;
-            // ---------------------------------------------------
+                // テスト用-------------------------------------------
+                std_msgs::msg::String msg_S;
+                msg_S.data = "1.0,0.04";
+                crack_size_publisher_->publish(msg_S);
+                // result_image_publisher_->publish(receive_image);
+                result_image_publisher_->publish(result_image);
+                RCLCPP_INFO_STREAM(this->get_logger(),"Publish: "<< receive_image.size() );
+                flag = true;
+                // ---------------------------------------------------
+            }
         }
         else if(receive_image.channels() == 1) {
             RCLCPP_INFO_STREAM(this->get_logger(),"Receive: black image" );
