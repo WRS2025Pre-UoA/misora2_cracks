@@ -39,7 +39,7 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                 Detection::MASK_THRESHOLD,
                 Detection::CONVERSION_CODE
             );
-            auto [trimming_image, result_image] = Detection::plot_results(receive_image, objs, colors, names, receive_image.size());
+            auto [trimming_image, result_image] = Detection::plot_results(receive_image, objs, colors, names);
             if(trimming_image.channels() == 1) std::cout << "Not found" << std::endl;
             else {
                 std::cout << "trimmed: " << trimming_image.size() << std::endl;

@@ -34,6 +34,5 @@ public:
                            std::unordered_map<int, std::string>& names);
     static void plot_keypoints(cv::Mat& image, const std::vector<YoloResults>& results, const cv::Size& shape);
     static std::tuple<cv::Mat, cv::Mat> plot_results(cv::Mat img, std::vector<YoloResults>& results,
-                           std::vector<cv::Scalar> color, std::unordered_map<int, std::string>& names,
-                           const cv::Size& shape);
+                           std::vector<cv::Scalar> color, std::unordered_map<int, std::string>& names);
 };
