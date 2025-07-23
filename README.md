@@ -4,7 +4,7 @@
  - テストピースからクラック(ひび)を検出し、以下の３つをオペレータPCへ渡す
     - クラックの長さ$[\mathrm{mm}]$
     - クラックの幅$[\mathrm{mm}]$
-    - 証拠画像：ボックス付き画像
+    - 証拠画像：ボックス付き画像（長さ、幅を書き込む）
 
 ## コード(src/)
  - detction.cpp : Yolo8を用いたテストピース自動検出を行う
@@ -13,7 +13,7 @@
  ros2 run misora2_cracks cracks_detection
  ~~~
  - cracks_component.cpp : ノード間の通信を行う ライブラリ化されている
- - cracks_node.cpp : cracks_componentを単体(ノードとして)で起動
+ - cracks_node.cpp : cracks_componentを単体(ノードとして)で起動　あらかじめ読み込む画像のパスを宣言
  ~~~bash!
  ros2 run misora2_cracks cracks_node
  ~~~
