@@ -35,8 +35,14 @@ int main() {
     cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
     auto [trimmed, boxed] = Detection::plot_results(img, objs, colors, names);
     if(trimmed.channels() == 1) std::cout << "Not found" << std::endl;
-    else std::cout << "trimmed: " << trimmed.size() << std::endl;
-
+    else 
+    {
+        std::cout << "trimmed: " << trimmed.size() << std::endl;
+        cv::imshow("trimmed",trimmed);
+        cv::imshow("with box",boxed);
+        cv::waitKey(0);
+        cv::destroyAllWindows();
+    }
 
     return 0;
 }
