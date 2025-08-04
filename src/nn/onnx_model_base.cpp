@@ -67,7 +67,7 @@ OnnxModelBase::OnnxModelBase(const char* modelPath, const char* logid, const cha
     //std::vector<const char*> inputNodeNames; //
     // ----------------
     // init input names
-    inputNodeNames;
+    // inputNodeNames;
     std::vector<Ort::AllocatedStringPtr> inputNodeNameAllocatedStrings; // <-- newly added
     Ort::AllocatorWithDefaultOptions allocator;
     auto inputNodesNum = session.GetInputCount();
@@ -78,7 +78,7 @@ OnnxModelBase::OnnxModelBase(const char* modelPath, const char* logid, const cha
     }
     // -----------------
     // init output names
-    outputNodeNames;
+    // outputNodeNames;
     auto outputNodesNum = session.GetOutputCount();
     std::vector<Ort::AllocatedStringPtr> outputNodeNameAllocatedStrings; // <-- newly added
     Ort::AllocatorWithDefaultOptions output_names_allocator;

@@ -110,6 +110,7 @@ AutoBackendOnnx::AutoBackendOnnx(const char* modelPath, const char* logid, const
         if (task_.empty())
         {
             task_ = task;
+            // std::cout << task << std::endl;
         }
     }
     else {
@@ -363,9 +364,10 @@ void AutoBackendOnnx::postprocess_masks(cv::Mat& output0, cv::Mat& output1, Imag
     {
         int idx = nms_result[i];
         boxes[idx] = boxes[idx] & cv::Rect(0, 0, image_info.raw_size.width, image_info.raw_size.height);
-        YoloResults result = { class_ids[idx] ,confidences[idx] ,boxes[idx] };
+
+        YoloResults result = { class_ids[idx] ,confidences[idx] ,boxes[idx] ,cv::Mat()};
         _get_mask2(cv::Mat(masks[idx]).t(), proto, image_info, boxes[idx], result.mask, mask_threshold,
-            iw, ih, mw, mh, masks_features_num);
+            iw, ih, mw, mh/*, masks_features_num*/);
         output.push_back(result);
     }
 }
@@ -415,7 +417,7 @@ void AutoBackendOnnx::postprocess_detects(cv::Mat& output0, ImageInfo image_info
     for (int idx : nms_result)
     {
         boxes[idx] = boxes[idx] & cv::Rect(0, 0, image_info.raw_size.width, image_info.raw_size.height);
-        YoloResults result = { class_ids[idx] ,confidences[idx] ,boxes[idx] };
+        YoloResults result = { class_ids[idx] ,confidences[idx] ,boxes[idx] ,cv::Mat()};
         output.push_back(result);
     }
 }
@@ -458,8 +460,8 @@ void AutoBackendOnnx::postprocess_kpts(cv::Mat& output0, ImageInfo& image_info, 
 void AutoBackendOnnx::_get_mask2(const cv::Mat& masks_features,
     const cv::Mat& proto,
     const ImageInfo& image_info, const cv::Rect bound, cv::Mat& mask_out,
-    const float& mask_thresh, int& iw, int& ih, int& mw, int& mh, int& masks_features_num,
-    bool round_downsampled)
+    const float& mask_thresh, int& iw, int& ih, int& mw, int& mh/*, int& masks_features_num,
+    bool round_downsampled*/)
 
 {
     cv::Size img0_shape = image_info.raw_size;
@@ -501,7 +503,7 @@ void AutoBackendOnnx::fill_blob(cv::Mat& image, float*& blob, std::vector<int64_
     {
         inputTensorShape = getInputTensorShape();
     }
-    int inputChannelsNum = inputTensorShape[1];
+    // int inputChannelsNum = inputTensorShape[1];
     int rtype = CV_32FC3;
     image.convertTo(floatImage, rtype, 1.0f / 255.0);
     blob = new float[floatImage.cols * floatImage.rows * floatImage.channels()];

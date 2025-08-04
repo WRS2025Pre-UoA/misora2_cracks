@@ -1,8 +1,13 @@
 #include "misora2_cracks/detection.hpp"
 
-int main() {
-    std::string image_file = "yurucan.png";
-    // std::cout << image_file << std::endl;
+int main(int argc, char *argv[]) {
+    std::string image_file;
+
+    if(argc > 1)image_file = argv[1];
+    else {
+        std::cout << "Please input image path" << std::endl;
+        return 0;
+    }
     // 初期設定-----------------------------------------------------
     if (!std::filesystem::exists(Detection::MODEL_PATH)) {
         std::cerr << "Model file does not exist at path: " << Detection::MODEL_PATH << std::endl;
@@ -24,7 +29,6 @@ int main() {
         Detection::CONVERSION_CODE
     );
     // -------------------------------------------------------------------------------------
-    
     if (img.empty()) {
         std::cerr << "画像の読み込みに失敗しました: " << image_file << std::endl;
         return -1;
@@ -33,13 +37,14 @@ int main() {
     std::cout << "Processing image: " << image_file << " (size: " << img.size() << ")" << std::endl;
     // 結果の描画
     cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
+    std::cout << "Num of objects :" << size(objs) << std::endl;
     auto [trimmed, boxed] = Detection::plot_results(img, objs, colors, names);
     if(trimmed.channels() == 1) std::cout << "Not found" << std::endl;
     else 
     {
         std::cout << "trimmed: " << trimmed.size() << std::endl;
-        cv::imshow("trimmed",trimmed);
         cv::imshow("with box",boxed);
+        cv::imshow("trimmed",trimmed);
         cv::waitKey(0);
         cv::destroyAllWindows();
     }

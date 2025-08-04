@@ -60,7 +60,7 @@ public:
     virtual void postprocess_kpts(cv::Mat& output0, ImageInfo& image_info, std::vector<YoloResults>& output,
                                   int& class_names_num, const float& conf_threshold, const float& iou_threshold);
     static void _get_mask2(const cv::Mat& mask_info, const cv::Mat& mask_data, const ImageInfo& image_info, cv::Rect bound, cv::Mat& mask_out,
-        const float& mask_thresh, int& iw, int& ih, int& mw, int& mh, int& masks_features_num, bool round_downsampled = false);
+        const float& mask_thresh, int& iw, int& ih, int& mw, int& mh/*, int& masks_features_num, bool round_downsampled = false*/);
 
 protected:
     std::vector<int> imgsz_;

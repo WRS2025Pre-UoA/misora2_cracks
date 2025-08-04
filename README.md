@@ -8,12 +8,20 @@
 
 ## コード(src/)
  - detction.cpp : Yolo8を用いたテストピース自動検出を行う
- - detction_main.cpp : detection.cppを単体で起動
- ~~~bash!
- ros2 run misora2_cracks cracks_detection
- ~~~
+ - detction_main.cpp : を単体で起動
  - cracks_component.cpp : ノード間の通信を行う ライブラリ化されている
  - cracks_node.cpp : cracks_componentを単体(ノードとして)で起動　あらかじめ読み込む画像のパスを宣言
- ~~~bash!
- ros2 run misora2_cracks cracks_node
- ~~~
+
+## 実行コード
+### ノード単体で実行
+~~~bash!
+colcon build 
+source install/setup.bash
+ros2 run misora2_cracks cracks_node
+~~~
+
+### C++プログラム実行
+~~~bash!
+colcon build --symlink-install
+./build/misora2_cracks/cracks_detection <画像パス> # テスト画像 : src/misora2_cracks/test.png
+~~~
