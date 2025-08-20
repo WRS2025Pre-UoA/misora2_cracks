@@ -25,7 +25,7 @@ EvaluateCracks::EvaluateCracks(const rclcpp::NodeOptions &options)
 
 void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
     cv::Mat receive_image = std::move(*msg);
-    double crack_width,crack_length;
+    // double crack_width,crack_length; // まだ使用しない
     cv::Mat result_image, trimming_image;
 
     if (not(receive_image.empty())){

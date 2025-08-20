@@ -9,7 +9,11 @@ if(NOT CMAKE_CXX_STANDARD)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+  # add_compile_options(-Wall -Wextra -Wpedantic)
+  # -Wpedantic を有効にしているため、C++17での std::make_pair の仕様変更に伴う警告が出ています。
+  # これはC++14とC++17でのパラメータ渡し方法の違いによるもので、ビルドには致命的ではありません。
+  # 警告を抑制するには -Wpedantic を外すか無効化してください。
+  add_compile_options(-Wall -Wextra)
 endif()
 
 # === ONNX Runtime ===
@@ -31,7 +35,7 @@ find_package(rclcpp_components REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(OpenCV 4.5 REQUIRED COMPONENTS core highgui imgproc)
+find_package(OpenCV 4.8 REQUIRED COMPONENTS core highgui imgproc)
 
 include_directories(
   include
