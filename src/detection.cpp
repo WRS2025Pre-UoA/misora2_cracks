@@ -88,8 +88,24 @@ std::tuple<cv::Mat, cv::Mat> Detection::plot_results(
 {
     cv::Mat image_with_box = img.clone();
     cv::Mat extracted_patch;  // 射影変換後の画像（1つだけ処理対象）
-
-    for (const auto& res : results) {
+    if (!results.empty()){
+        // 画像中心に一番近いものを探す
+        cv::Size img_size = img.size();
+        float min_dist = 1e9;
+        size_t min_idx = 0;
+        for (size_t i = 0; i < results.size(); ++i) {
+            float cx = results[i].bbox.x + results[i].bbox.width / 2.0f;
+            float cy = results[i].bbox.y + results[i].bbox.height / 2.0f;
+            float dx = cx - img_size.width / 2.0f;
+            float dy = cy - img_size.height / 2.0f;
+            float dist = std::sqrt(dx*dx + dy*dy);
+            if (dist < min_dist) {
+                min_dist = dist;
+                min_idx = i;
+            }
+        }
+        const auto& res = results[min_idx];
+        // for (const auto& res : results) {
         // 枠描画
         cv::rectangle(image_with_box, res.bbox, color[res.class_idx], 2);
 
@@ -121,7 +137,10 @@ std::tuple<cv::Mat, cv::Mat> Detection::plot_results(
             // 輪郭検出
             std::vector<std::vector<cv::Point>> contours;
             cv::findContours(mask_bin, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-            if (contours.empty()) continue;
+            if (contours.empty()){
+                cv::Mat extracted_patch = cv::Mat::zeros(img.rows, img.cols, CV_8UC1);
+                return {extracted_patch, image_with_box};
+            }
 
             // 最大輪郭選択
             size_t max_idx = 0;
@@ -184,9 +203,10 @@ std::tuple<cv::Mat, cv::Mat> Detection::plot_results(
             // 射影変換
             cv::Mat M = cv::getPerspectiveTransform(shrunk_quad, dst_pts);
             cv::warpPerspective(cropped_img, extracted_patch, M, cv::Size(warped_width, warped_height));
-            break;  // 複数物体を処理したい場合は break を削除
+            // break;  // 複数物体を処理したい場合は break を削除
         }
     }
+    // }
 
     return {extracted_patch, image_with_box};
 }

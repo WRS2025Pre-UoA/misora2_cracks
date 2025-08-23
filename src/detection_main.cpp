@@ -34,20 +34,84 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    std::cout << "Processing image: " << image_file << " (size: " << img.size() << ")" << std::endl;
-    // 結果の描画
-    cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
-    std::cout << "Num of objects :" << size(objs) << std::endl;
-    auto [trimmed, boxed] = Detection::plot_results(img, objs, colors, names);
-    if(trimmed.channels() == 1) std::cout << "Not found" << std::endl;
-    else 
-    {
-        std::cout << "trimmed: " << trimmed.size() << std::endl;
-        cv::imshow("with box",boxed);
-        cv::imshow("trimmed",trimmed);
-        cv::waitKey(0);
-        cv::destroyAllWindows();
-    }
+    // // std::cout << "Processing image: " << image_file << " (size: " << img.size() << ")" << std::endl;
+    // // // 結果の描画
+    // // cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
+    // // std::cout << "Num of objects :" << size(objs) << std::endl;
+    // // auto [trimmed, boxed] = Detection::plot_results(img, objs, colors, names);
+    // // if(trimmed.channels() == 1) std::cout << "Not found" << std::endl;
+    // // else 
+    // // {
+    // //     std::cout << "trimmed: " << trimmed.size() << std::endl;
+    // //     cv::imshow("with box",boxed);
+    // //     cv::imshow("trimmed",trimmed);
+    // //     cv::waitKey(0);
+    // //     cv::destroyAllWindows();
+    // // }
+
+    
+    // // ディレクトリごとに処理
+    // std::string folder_path = "../20250806/Original_Img/";
+    // std::string image_file;
+    // // モデルの初期化
+    // AutoBackendOnnx model(Detection::MODEL_PATH, Detection::ONNX_LOGID, Detection::ONNX_PROVIDER);
+    // // std::cout << image_file << 1 << std::endl;
+    // std::vector<cv::Scalar> colors = Detection::generateRandomColors(model.getNc(), model.getCh());
+    // std::unordered_map<int, std::string> names = model.getNames();
+
+    // // 処理に掛けるファイルの総数
+    // int max_num = 32;
+
+    // for( int i = 1 ; i <= max_num ; i++){
+    //     image_file = folder_path + "pic_" + std::to_string(i) + ".png";
+    //     std::cout << image_file << std::endl;
+        
+    //     // 画像の読み込み
+    //     cv::Mat img = cv::imread(image_file, cv::IMREAD_UNCHANGED);
+    //     if (img.empty()) {
+    //         std::cerr << "画像の読み込みに失敗しました: " << image_file << std::endl;
+    //         return -1;
+    //     }
+    //     // 推論実行
+    //     std::vector<YoloResults> objs = model.predict_once(
+    //         img,
+    //         Detection::CONF_THRESHOLD,
+    //         Detection::IOU_THRESHOLD,
+    //         Detection::MASK_THRESHOLD,
+    //         Detection::CONVERSION_CODE
+    //     );
+    //     // -------------------------------------------------------------------------------------
+        
+    //     if (img.empty()) {
+    //         std::cerr << "画像の読み込みに失敗しました: " << image_file << std::endl;
+    //         return -1;
+    //     }
+    //     if(objs.empty()){
+    //         std::cout << "Not Found" << std::endl;
+    //     }
+    //     std::cout << size(objs) <<std::endl;
+    //     std::cout << "Processing image: " << image_file << " (size: " << img.size() << ")" << std::endl;
+    //     // 結果の描画
+    //     cv::cvtColor(img, img, cv::COLOR_RGB2BGR);
+    //     auto [trimmed, boxed] = Detection::plot_results(img, objs, colors, names);
+    //     if(trimmed.channels() == 1){
+    //         std::cout << "Not found" << std::endl;
+    //     }
+    //     else {
+    //         std::cout << "trimmed: " << trimmed.size() << std::endl;
+    //         // cv::imshow("trimmed",trimmed);
+    //         // cv::imshow("with box",boxed);
+    //         // cv::waitKey(0);
+    //         // cv::destroyAllWindows();
+
+    //         std::string save_file_cropped = "../20250806/Cropped_Img/img" + std::to_string(i) + ".png";
+
+    //         std::string save_file_detected = "../20250806/Detected_Img/img" + std::to_string(i) + ".png";
+    //         cv::imwrite(save_file_cropped, trimmed);
+    //         cv::imwrite(save_file_detected,boxed);
+    //     }
+    // } 
+
 
     return 0;
 }
