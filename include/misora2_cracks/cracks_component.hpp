@@ -23,7 +23,7 @@
 
 #include "misora2_cracks/cv_mat_type_adapter.hpp"
 #include "misora2_cracks/detection.hpp"
-
+#include "misora2_cracks/size.hpp"
 
 using namespace std::chrono_literals;
 
