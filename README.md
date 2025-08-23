@@ -8,7 +8,10 @@
 
 ## コード(src/)
  - detction.cpp : Yolo8を用いたテストピース自動検出を行う
- - detction_main.cpp : を単体で起動
+ - detction_main.cpp : detection.cppを単体で起動
+ - size.cpp : LSD(Line Segment Detection)を用いてクラックのサイズを測定
+ - size_main.cpp : size.cppを単体で起動
+ - lsd.c : LSDを行うために必要な関数をもつライブラリ
  - cracks_component.cpp : ノード間の通信を行う ライブラリ化されている
  - cracks_node.cpp : cracks_componentを単体(ノードとして)で起動　あらかじめ読み込む画像のパスを宣言
 
@@ -21,7 +24,13 @@ ros2 run misora2_cracks cracks_node
 ~~~
 
 ### C++プログラム実行
+#### detection.cppの場合
 ~~~bash!
 colcon build --symlink-install
-./build/misora2_cracks/cracks_detection <画像パス> # テスト画像 : src/misora2_cracks/test.png
+./build/misora2_cracks/cracks_detection <画像パス> # テスト画像 : src/misora2_cracks/test1.png
+~~~
+#### size.cppの場合
+~~~bash!
+colcon build --symlink-install
+./build/misora2_cracks/cracks_size <画像パス> # テスト画像 : src/misora2_cracks/test2.png
 ~~~
