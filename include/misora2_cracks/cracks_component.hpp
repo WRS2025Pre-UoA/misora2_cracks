@@ -24,6 +24,7 @@
 #include "misora2_cracks/cv_mat_type_adapter.hpp"
 #include "misora2_cracks/detection.hpp"
 #include "misora2_cracks/size.hpp"
+#include "misora2_custom_msg/msg/custom.hpp"
 
 using namespace std::chrono_literals;
 
@@ -49,8 +50,9 @@ private:
     std::string to_string_with_precision(double value, int precision);
 
     rclcpp::Subscription<MyAdaptedType>::SharedPtr receive_image_;
-    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr crack_size_publisher_;
-    rclcpp::Publisher<MyAdaptedType>::SharedPtr result_image_publisher_;
+    // rclcpp::Publisher<std_msgs::msg::String>::SharedPtr crack_size_publisher_;
+    // rclcpp::Publisher<MyAdaptedType>::SharedPtr result_image_publisher_;
+    rclcpp::Publisher<misora2_custom_msg::msg::Custom>::SharedPtr publisher_; // メッセージ型変更
 };
 
 } // namespace component_cracks

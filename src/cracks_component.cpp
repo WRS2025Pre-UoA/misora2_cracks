@@ -8,8 +8,9 @@ EvaluateCracks::EvaluateCracks(const rclcpp::NodeOptions &options)
 {
     receive_image_ = this->create_subscription<MyAdaptedType>("cracks_image",10,std::bind(&EvaluateCracks::update_image_callback,this,std::placeholders::_1));
     
-    crack_size_publisher_ = this->create_publisher<std_msgs::msg::String>("cracks_result_data",10);
-    result_image_publisher_ = this->create_publisher<MyAdaptedType>("cracks_result_image",10);//不要だったらコメントアウト
+    // crack_size_publisher_ = this->create_publisher<std_msgs::msg::String>("cracks_result_data",10);
+    // result_image_publisher_ = this->create_publisher<MyAdaptedType>("cracks_result_image",10);//不要だったらコメントアウト
+    publisher_ = this->create_publisher<misora2_custom_msg::msg::Custom>("cracks_results",10);
     // 初期設定-----------------------------------------------------
     if (!std::filesystem::exists(Detection::MODEL_PATH)) {
         std::cerr << "Model file does not exist at path: " << Detection::MODEL_PATH << std::endl;
@@ -48,46 +49,26 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                 auto [best, lines, corrected] = CracksSize::run_detection(trimming_image);
                 if (best.num_lines == 0 || lines.empty()) { // 線を見つけられなかった場合
                     // たった一度の線検出失敗で0と報告していいものだろうか
-                    std_msgs::msg::String msg_S;
-                    msg_S.data = "0.000,0.000";
-                    crack_size_publisher_->publish(msg_S);
-                    // 取得したサイズを検出画像に書き込むこと
-                    result_image_publisher_->publish(result_image);
+                    misora2_custom_msg::msg::Custom data;
+                    data.result = "0.000,0.000";
+                    data.image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", result_image).toImageMsg());
+                    publisher_->publish(data);
+
                     flag = true;
                     RCLCPP_INFO_STREAM(this->get_logger(),"Publish Crack size: "<<  "0.0,0.0");
                 }
                 else{ // 線を見つけられた場合
                     std::string length = to_string_with_precision(best.total_length,4);
                     std::string width = to_string_with_precision(best.total_width,4);
-                    std_msgs::msg::String msg_S;
-                    msg_S.data = length + "," + width;
-                    crack_size_publisher_->publish(msg_S);
-                    // 取得したサイズを検出画像に書き込むこと
-                    result_image_publisher_->publish(result_image);
+                    
+                    misora2_custom_msg::msg::Custom data;
+                    data.result = length + "," + width;
+                    data.image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", result_image).toImageMsg());
+                    publisher_->publish(data);
+
                     flag = true;
                     RCLCPP_INFO_STREAM(this->get_logger(),"Publish Crack size: "<<  length + "," + width);
                 }
-            // auto[result_image, trimming_image] = func1(receive_image); // 成功：検出したテストピースを囲んだ画像、切り抜いた画像　失敗：黒画像ｘ２
-            // if( result_image.channels() != 1 and trimming_image.channels() != 1 ){ // 検出成功時
-            //     auto[crack_width, crack_length] = func2(trimming_image); // 見つからなかった場合 [0.0,0.0] 線の幅と長さ　double
-            //     std_msgs::msg::String msg_S;
-            //     std::string text1 = to_string_with_precision(crack_width, 7); // 桁数は後々調整
-            //     std::string text2 = to_string_with_precision(crack_length, 7); // 桁数は後々調整
-            //     msg_S.data = text1 + "," + text2;
-            //     crack_size_publisher->publish(msg_S);
-            //     // 取得したサイズを検出画像に書き込むこと
-            //     result_image_publisher_->publish(result_image);
-            //     flag = true;
-            // }else RCLCPP_INFO_STREAM(this->get_logger(), "Couldn't find meter");
-                // テスト用-------------------------------------------
-                // std_msgs::msg::String msg_S;
-                // msg_S.data = "1.0,0.04";
-                // crack_size_publisher_->publish(msg_S);
-                // // result_image_publisher_->publish(receive_image);
-                // result_image_publisher_->publish(result_image);
-                // RCLCPP_INFO_STREAM(this->get_logger(),"Publish: "<< receive_image.size() );
-                // flag = true;
-                // ---------------------------------------------------
             }
         }
         else if(receive_image.channels() == 1) {
