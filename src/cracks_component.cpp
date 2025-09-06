@@ -1,5 +1,5 @@
 #include "misora2_cracks/cracks_component.hpp"
-#include "misora2_cracks/detection.hpp"
+
 namespace component_cracks
 {
 EvaluateCracks::EvaluateCracks(const rclcpp::NodeOptions &options)
