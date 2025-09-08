@@ -21,10 +21,9 @@ int main(int argc, char* argv[]) {
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     std::cout << "detect5 [処理時間] " << duration.count() << " ms\n";
-    CracksSize::draw_lines(corrected, lines, best.threshold, best.blur);
+    CracksSize::draw_lines(corrected, lines, best.blur);
 
-    std::cout << "Threshold: " << best.threshold
-              << ", Blur: " << best.blur
+    std::cout << "Blur: " << best.blur
               << ", NFA: " << best.nfa << '\n';
     std::cout << "Lines: " << best.num_lines << '\n'
               << "Total Length (mm): " << best.total_length << '\n'

@@ -15,7 +15,6 @@ public:
     };
 
     struct Result {
-        int threshold;
         int blur;
         int nfa;
         int num_lines;
@@ -24,10 +23,10 @@ public:
     };
 
     // 宣言時だけstatic
-    static double get_line_width(const cv::Mat& bin_blur, const cv::Point2f& p1, const cv::Point2f& p2);
-    static std::vector<LineInfo> detect_LSD(const cv::Mat& original, int threshold_val, int blur_size, int nfa_thresh);
+    static double get_line_width(const cv::Mat& gray, const cv::Point2f& p1, const cv::Point2f& p2);
+    static std::vector<LineInfo> detect_LSD(const cv::Mat& original, int blur_size, int nfa_thresh);
     static Result find_best(const cv::Mat& original);
-    static void draw_lines(const cv::Mat& original, const std::vector<LineInfo>& lines, int threshold_val, int blur_size);
+    static void draw_lines(const cv::Mat& original, const std::vector<LineInfo>& lines, int blur_size);
     static cv::Mat homography(const cv::Mat& input_gray, float shrink_ratio = 0.05f);
     static std::tuple<Result, std::vector<LineInfo>, cv::Mat> run_detection(const cv::Mat& original);
 };
