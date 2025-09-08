@@ -52,6 +52,7 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                     misora2_custom_msg::msg::Custom data;
                     data.result = "0.000,0.000";
                     data.image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", result_image).toImageMsg());
+                    data.raw_image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", receive_image).toImageMsg());
                     publisher_->publish(data);
 
                     flag = true;
@@ -64,6 +65,7 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                     misora2_custom_msg::msg::Custom data;
                     data.result = length + "," + width;
                     data.image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", result_image).toImageMsg());
+                    data.raw_image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", receive_image).toImageMsg());
                     publisher_->publish(data);
 
                     flag = true;
