@@ -33,6 +33,7 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
     // RCLCPP_INFO_STREAM(this->get_logger(), "Received image channels: " << receive_image.channels());
     if (not(receive_image.empty())){
         if (flag == false and receive_image.channels() != 1){// カラー画像である
+            // RCLCPP_INFO_STREAM(this->get_logger(),"Receive: color image: " << msg->encoding.c_str() );
             // 実装分部
             // 推論実行
             std::vector<YoloResults> objs = model.predict_once(
@@ -51,6 +52,7 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                     // たった一度の線検出失敗で0と報告していいものだろうか
                     misora2_custom_msg::msg::Custom data;
                     data.result = "0.000,0.000";
+                    cv::cvtColor(result_image, result_image, cv::COLOR_RGB2BGR);
                     data.image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", result_image).toImageMsg());
                     publisher_->publish(data);
 
@@ -63,7 +65,9 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                     
                     misora2_custom_msg::msg::Custom data;
                     data.result = length + "," + width;
+                    cv::cvtColor(result_image, result_image, cv::COLOR_RGB2BGR);
                     data.image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", result_image).toImageMsg());
+                    // data.image = result_image;
                     publisher_->publish(data);
 
                     flag = true;
