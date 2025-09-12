@@ -54,6 +54,7 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                     data.result = "0.000,0.000";
                     cv::cvtColor(result_image, result_image, cv::COLOR_RGB2BGR);
                     data.image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", result_image).toImageMsg());
+                    data.raw_image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", receive_image).toImageMsg());
                     publisher_->publish(data);
 
                     flag = true;
@@ -67,7 +68,6 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                     data.result = length + "," + width;
                     cv::cvtColor(result_image, result_image, cv::COLOR_RGB2BGR);
                     data.image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", result_image).toImageMsg());
-                    // data.image = result_image;
                     publisher_->publish(data);
 
                     flag = true;
