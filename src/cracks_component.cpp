@@ -53,10 +53,13 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                     misora2_custom_msg::msg::Custom data;
                     data.result = "0.000,0.000";
                     cv::cvtColor(result_image, result_image, cv::COLOR_RGB2BGR);
-                    data.image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", result_image).toImageMsg());
+                    cv::Mat send_image = EvaluateCracks::putResult(result_image, "0.000", "0.000");
+                    data.image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", send_image).toImageMsg());
                     data.raw_image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", receive_image).toImageMsg());
                     publisher_->publish(data);
-
+                    // cv::imshow("test", send_image);
+                    // cv::waitKey(0);
+                    // cv::destroyAllWindows();
                     flag = true;
                     RCLCPP_INFO_STREAM(this->get_logger(),"Publish Crack size: "<<  "0.0,0.0");
                 }
@@ -67,9 +70,13 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                     misora2_custom_msg::msg::Custom data;
                     data.result = length + "," + width;
                     cv::cvtColor(result_image, result_image, cv::COLOR_RGB2BGR);
-                    data.image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", result_image).toImageMsg());
+                    cv::Mat send_image = EvaluateCracks::putResult(result_image, length, width);
+                    data.image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", send_image).toImageMsg());
+                    data.raw_image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", receive_image).toImageMsg());
                     publisher_->publish(data);
-
+                    // cv::imshow("test", send_image);
+                    // cv::waitKey(0);
+                    // cv::destroyAllWindows();
                     flag = true;
                     RCLCPP_INFO_STREAM(this->get_logger(),"Publish Crack size: "<<  length + "," + width);
                 }
@@ -86,6 +93,18 @@ std::string EvaluateCracks::to_string_with_precision(double value, int precision
     std::ostringstream out;
     out << std::fixed << std::setprecision(precision) << value;
     return out.str();
+}
+
+cv::Mat EvaluateCracks::putResult(cv::Mat& image, std::string length, std::string width){
+    std::string text ="Length: " + length + ", Width:" + width + " mm";
+    // フォント、サイズ、色、線の太さ、線種
+    int baseline = 0;
+    cv::Size text_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX|cv::FONT_ITALIC, 1, 2, &baseline);
+    // std::cout << text_size << std::endl;
+    cv::Point tp = cv::Point(int(image.cols-text_size.width)/2,text_size.height+5);
+    cv::Scalar color = cv::Scalar(0, 0, 255);
+    cv::putText(image, text, tp, cv::FONT_HERSHEY_SIMPLEX|cv::FONT_ITALIC, 1, color, 2);
+    return image;
 }
 
 } //namespace component_cracks
