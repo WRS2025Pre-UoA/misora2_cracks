@@ -69,6 +69,7 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                     
                     misora2_custom_msg::msg::Custom data;
                     data.result = length + "," + width;
+                    
                     cv::cvtColor(result_image, result_image, cv::COLOR_RGB2BGR);
                     cv::Mat send_image = EvaluateCracks::putResult(result_image, length, width);
                     data.image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", send_image).toImageMsg());
