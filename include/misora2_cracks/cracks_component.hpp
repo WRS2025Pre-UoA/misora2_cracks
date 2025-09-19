@@ -48,7 +48,7 @@ public:
 private:
     void update_image_callback(const std::unique_ptr<cv::Mat> msg);
     std::string to_string_with_precision(double value, int precision);
-    cv::Mat putResult(cv::Mat& image, std::string length, std::string width);
+    cv::Mat putResult(cv::Mat& image, std::string length, std::string width, std::string area);
 
     rclcpp::Subscription<MyAdaptedType>::SharedPtr receive_image_;
     // rclcpp::Publisher<std_msgs::msg::String>::SharedPtr crack_size_publisher_;

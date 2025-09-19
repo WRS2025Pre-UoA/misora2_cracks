@@ -51,9 +51,9 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                 if (best.num_lines == 0 || lines.empty()) { // 線を見つけられなかった場合
                     // たった一度の線検出失敗で0と報告していいものだろうか
                     misora2_custom_msg::msg::Custom data;
-                    data.result = "0.000,0.000";
+                    data.result = "0.000,0.000,0.000";
                     cv::cvtColor(result_image, result_image, cv::COLOR_RGB2BGR);
-                    cv::Mat send_image = EvaluateCracks::putResult(result_image, "0.000", "0.000");
+                    cv::Mat send_image = EvaluateCracks::putResult(result_image, "0.000", "0.000", "0.000");
                     data.image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", send_image).toImageMsg());
                     data.raw_image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", receive_image).toImageMsg());
                     publisher_->publish(data);
@@ -61,17 +61,22 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                     // cv::waitKey(0);
                     // cv::destroyAllWindows();
                     flag = true;
-                    RCLCPP_INFO_STREAM(this->get_logger(),"Publish Crack size: "<<  "0.0,0.0");
+                    RCLCPP_INFO_STREAM(this->get_logger(),"Publish Crack size: "<<  "0.0,0.0,0.0");
                 }
                 else{ // 線を見つけられた場合
-                    std::string length = to_string_with_precision(best.total_length,4);
-                    std::string width = to_string_with_precision(best.total_width,4);
+                    double length,width,area;
+                    length = best.total_length;
+                    width = best.total_width;
+                    area = length * width;
+                    std::string length_S = to_string_with_precision(length,4);
+                    std::string width_S = to_string_with_precision(width,4);
+                    std::string area_S = to_string_with_precision(area,4);
                     
                     misora2_custom_msg::msg::Custom data;
-                    data.result = length + "," + width;
+                    data.result = length_S + "," + width_S + "," + area_S;
                     
                     cv::cvtColor(result_image, result_image, cv::COLOR_RGB2BGR);
-                    cv::Mat send_image = EvaluateCracks::putResult(result_image, length, width);
+                    cv::Mat send_image = EvaluateCracks::putResult(result_image, length_S, width_S, area_S);
                     data.image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", send_image).toImageMsg());
                     data.raw_image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", receive_image).toImageMsg());
                     publisher_->publish(data);
@@ -79,7 +84,7 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                     // cv::waitKey(0);
                     // cv::destroyAllWindows();
                     flag = true;
-                    RCLCPP_INFO_STREAM(this->get_logger(),"Publish Crack size: "<<  length + "," + width);
+                    RCLCPP_INFO_STREAM(this->get_logger(),"Publish Crack size: "<<  length << "," << width << "," << area);
                 }
             }
         }
@@ -96,8 +101,8 @@ std::string EvaluateCracks::to_string_with_precision(double value, int precision
     return out.str();
 }
 
-cv::Mat EvaluateCracks::putResult(cv::Mat& image, std::string length, std::string width){
-    std::string text ="Length: " + length + ", Width:" + width + " mm";
+cv::Mat EvaluateCracks::putResult(cv::Mat& image, std::string length, std::string width, std::string area){
+    std::string text ="Length: " + length + ", Width:" + width + " mm, Area:" + area + "sq.mm";
     // フォント、サイズ、色、線の太さ、線種
     int baseline = 0;
     cv::Size text_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX|cv::FONT_ITALIC, 1, 2, &baseline);
