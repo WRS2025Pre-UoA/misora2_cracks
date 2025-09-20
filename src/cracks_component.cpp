@@ -8,8 +8,6 @@ EvaluateCracks::EvaluateCracks(const rclcpp::NodeOptions &options)
 {
     receive_image_ = this->create_subscription<MyAdaptedType>("cracks_image",10,std::bind(&EvaluateCracks::update_image_callback,this,std::placeholders::_1));
     
-    // crack_size_publisher_ = this->create_publisher<std_msgs::msg::String>("cracks_result_data",10);
-    // result_image_publisher_ = this->create_publisher<MyAdaptedType>("cracks_result_image",10);//不要だったらコメントアウト
     publisher_ = this->create_publisher<misora2_custom_msg::msg::Custom>("cracks_results",10);
     // 初期設定-----------------------------------------------------
     if (!std::filesystem::exists(Detection::MODEL_PATH)) {
@@ -27,13 +25,12 @@ EvaluateCracks::EvaluateCracks(const rclcpp::NodeOptions &options)
 
 void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
     cv::Mat receive_image = std::move(*msg);
-    // double crack_width,crack_length; // まだ使用しない
+    
     cv::Mat result_image, trimming_image;
-    // RCLCPP_INFO_STREAM(this->get_logger(),"Wait Image");
-    // RCLCPP_INFO_STREAM(this->get_logger(), "Received image channels: " << receive_image.channels());
+    
     if (not(receive_image.empty())){
         if (flag == false and receive_image.channels() != 1){// カラー画像である
-            // RCLCPP_INFO_STREAM(this->get_logger(),"Receive: color image: " << msg->encoding.c_str() );
+            
             // 実装分部
             // 推論実行
             std::vector<YoloResults> objs = model.predict_once(
@@ -53,13 +50,11 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                     misora2_custom_msg::msg::Custom data;
                     data.result = "0.000,0.000,0.000";
                     cv::cvtColor(result_image, result_image, cv::COLOR_RGB2BGR);
+                    cv::cvtColor(receive_image, receive_image, cv::COLOR_RGB2BGR);
                     cv::Mat send_image = EvaluateCracks::putResult(result_image, "0.000", "0.000", "0.000");
                     data.image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", send_image).toImageMsg());
                     data.raw_image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", receive_image).toImageMsg());
                     publisher_->publish(data);
-                    // cv::imshow("test", send_image);
-                    // cv::waitKey(0);
-                    // cv::destroyAllWindows();
                     flag = true;
                     RCLCPP_INFO_STREAM(this->get_logger(),"Publish Crack size: "<<  "0.0,0.0,0.0");
                 }
@@ -76,20 +71,19 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                     data.result = length_S + "," + width_S + "," + area_S;
                     
                     cv::cvtColor(result_image, result_image, cv::COLOR_RGB2BGR);
+                    cv::cvtColor(receive_image, receive_image, cv::COLOR_RGB2BGR);
                     cv::Mat send_image = EvaluateCracks::putResult(result_image, length_S, width_S, area_S);
                     data.image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", send_image).toImageMsg());
                     data.raw_image = *(cv_bridge::CvImage(std_msgs::msg::Header(), "bgr8", receive_image).toImageMsg());
                     publisher_->publish(data);
-                    // cv::imshow("test", send_image);
-                    // cv::waitKey(0);
-                    // cv::destroyAllWindows();
                     flag = true;
                     RCLCPP_INFO_STREAM(this->get_logger(),"Publish Crack size: "<<  length << "," << width << "," << area);
                 }
             }
         }
         else if(receive_image.channels() == 1) {
-            RCLCPP_INFO_STREAM(this->get_logger(),"Receive: black image" );
+            if (flag) RCLCPP_INFO_STREAM(this->get_logger(), "Success Process");
+            else RCLCPP_INFO_STREAM(this->get_logger(),"Failed Process" );
             flag = false;// 1 chanelある画像　黒画像 
         } 
     }
