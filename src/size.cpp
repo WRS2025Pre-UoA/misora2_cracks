@@ -3,6 +3,13 @@
 #include <cmath>
 #include <algorithm>
 
+cv::Mat CracksSize::apply_clahe(const cv::Mat& gray, double clipLimit, int tileGrid) {
+    CV_Assert(gray.type() == CV_8UC1);
+    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(clipLimit, cv::Size(tileGrid, tileGrid));
+    cv::Mat out;
+    clahe->apply(gray, out);
+    return out;
+}
 // get_line_widthの定義（staticメンバ関数）
 double CracksSize::get_line_width(const cv::Mat& gray, const cv::Point2f& p1, const cv::Point2f& p2) {
     cv::Point2f dir = p2 - p1;
@@ -19,24 +26,22 @@ double CracksSize::get_line_width(const cv::Mat& gray, const cv::Point2f& p1, co
         return (int)gray.at<uchar>(y, x);
     };
 
-    int Ic = sample(center);
-
-    int bgCnt = 0; double Ibg_sum = 0.0;
+    // 背景推定（法線±15〜25px の中央値）
+    std::vector<int> bg; bg.reserve(2 * (25 - 15 + 1));
     for (int d = 15; d <= 25; ++d) {
         cv::Point2f ppos = center + normal * (float)d;
         cv::Point2f pneg = center - normal * (float)d;
-        if (ppos.x >= 0 && ppos.x < gray.cols && ppos.y >= 0 && ppos.y < gray.rows) {
-            Ibg_sum += sample(ppos); bgCnt++;
-        }
-        if (pneg.x >= 0 && pneg.x < gray.cols && pneg.y >= 0 && pneg.y < gray.rows) {
-            Ibg_sum += sample(pneg); bgCnt++;
-        }
+        if (ppos.x >= 0 && ppos.x < gray.cols && ppos.y >= 0 && ppos.y < gray.rows) bg.push_back(sample(ppos));
+        if (pneg.x >= 0 && pneg.x < gray.cols && pneg.y >= 0 && pneg.y < gray.rows) bg.push_back(sample(pneg));
     }
-    if (bgCnt == 0) return 0.0;
-    double Ibg = Ibg_sum / bgCnt;
+    if (bg.empty()) return 0.0;
+    std::nth_element(bg.begin(), bg.begin() + bg.size()/2, bg.end());
+    double Ibg = (double)bg[bg.size()/2];
 
-    double T = 0.5 * (Ic + Ibg);
-    int margin = 10;  // 厳しさを調整（5〜10推奨）
+    // しきい値（中点＋マージン）
+    int Ic = sample(center);
+    const int margin = 10;
+    double T = 0.5 * (Ibg + Ic);
 
     int max_check = 30;
     int width_pos = 0, width_neg = 0;
@@ -55,14 +60,27 @@ double CracksSize::get_line_width(const cv::Mat& gray, const cv::Point2f& p1, co
         if (I <= T - margin) width_neg++;
         else break;
     }
+ // 中心が線内か救済判定
+    bool center_dark = (Ic <= T - margin);
+    if (!center_dark) {
+        cv::Point2f tangent = dir;
+        for (int t = -2; t <= 2; ++t) {
+            if (t == 0) continue;
+            if (sample(center + tangent * (float)t) <= T - margin) { center_dark = true; break; }
+        }
+    }
+    if (!center_dark && width_pos > 0 && width_neg > 0) center_dark = true;
 
-    return static_cast<double>(width_pos + width_neg);
+    return double(width_pos + width_neg + (center_dark ? 1 : 0));
 }
 // detect_LSDの定義
-std::vector<CracksSize::LineInfo> CracksSize::detect_LSD(const cv::Mat& original, int blur_size, int nfa_thresh) {
+std::vector<CracksSize::LineInfo> CracksSize::detect_LSD(const cv::Mat& original, int blur_size, int nfa_thresh,  bool use_clahe, double clipLimit, int tileGrid) {
     cv::Mat gray;
     if (original.channels() == 3) cv::cvtColor(original, gray, cv::COLOR_BGR2GRAY);
     else gray = original;
+
+    // CLAHE（幅計測もこの画を使う）
+    cv::Mat gray_eq = use_clahe ? apply_clahe(gray, clipLimit, tileGrid) : gray;
 
     cv::Mat proc = gray.clone();
     int k = std::max(1, blur_size) | 1;
@@ -80,6 +98,7 @@ std::vector<CracksSize::LineInfo> CracksSize::detect_LSD(const cv::Mat& original
     double scale_y = 20.0 / proc.rows;
 
     std::vector<LineInfo> all_lines;
+    all_lines.reserve(n_lines);
     for (int i = 0; i < n_lines; ++i) {
         if (lines_data[i * 7 + 6] > nfa_thresh) {
             cv::Point2f p1(lines_data[i * 7 + 0], lines_data[i * 7 + 1]);
@@ -101,8 +120,8 @@ std::vector<CracksSize::LineInfo> CracksSize::detect_LSD(const cv::Mat& original
             if (is_angle_ok && length_mm >= 20.0 && length_mm <= 200.0) {
                 double width_px = get_line_width(gray, p1, p2);
                 double width_mm = width_px * (20.0 / proc.cols) * 10.0;
-                if (width_mm >= 0.1 && width_mm < 5)
-                    all_lines.push_back({p1, p2, length_mm, width_mm});
+                if (width_mm > 0.5) width_mm = 0.5;
+                all_lines.push_back({p1, p2, length_mm, width_mm});
             }
         }
     }
@@ -114,19 +133,29 @@ std::vector<CracksSize::LineInfo> CracksSize::detect_LSD(const cv::Mat& original
 }
 
 // find_bestの定義
-CracksSize::Result CracksSize::find_best(const cv::Mat& original) {
+CracksSize::Result CracksSize::find_best(const cv::Mat& original, bool use_clahe, int tileGrid) {
     std::vector<CracksSize::Result> results;
+    results.reserve(5 * 4 * ((100 - 10) / 5 + 1)); 
 
-    for (int blur = 1; blur <= 5; blur += 2) {     
-        for (int nfa = 10; nfa <= 100; nfa += 5) {
-            auto lines = detect_LSD(original, blur, nfa);
-            double total_len = 0.0;
-            double total_wid = 0.0;
-            for (auto& l : lines) {
-                total_len += l.length;
-                total_wid += l.width;
+    const double clipCandidates[] = {1.0, 1.25, 1.5};
+
+    for (double clip : clipCandidates) {
+        for (int blur = 1; blur <= 3; blur += 1) {
+            for (int nfa = 0; nfa <= 80; nfa += 5) {
+                auto lines = detect_LSD(original, 2*blur-1, nfa, use_clahe, clip, tileGrid);
+                double total_len = 0.0, total_wid = 0.0;
+                for (auto& l : lines) { total_len += l.length; total_wid += l.width; }
+                Result r;
+                r.blur = 2*blur-1;
+                r.nfa = nfa;
+                r.num_lines = (int)lines.size();
+                r.total_length = total_len;
+                r.total_width = total_wid;
+                r.use_clahe = use_clahe;
+                r.clipLimit = clip;
+                r.tileGrid = tileGrid;
+                results.push_back(r);
             }
-            results.push_back({blur, nfa, (int)lines.size(), total_len, total_wid});
         }
     }
 
@@ -141,17 +170,18 @@ CracksSize::Result CracksSize::find_best(const cv::Mat& original) {
         }
     }
 
-    return found ? best : CracksSize::Result{ 0, 0, 0, 0.0, 0.0 };
+    return found ? best : Result{0,0,0,0.0,0.0,use_clahe,1.0,tileGrid};
 }
 
 // draw_linesの定義（非staticメンバ関数）
 void CracksSize::draw_lines(const cv::Mat& original, const std::vector<CracksSize::LineInfo>& lines,
-    int blur_size) {
-        cv::Mat gray;
+    int blur_size,  bool use_clahe, double clipLimit, int tileGrid) {
+    cv::Mat gray;
     if (original.channels() == 3) cv::cvtColor(original, gray, cv::COLOR_BGR2GRAY);
     else gray = original;
+    
+    cv::Mat display = use_clahe ? apply_clahe(gray, clipLimit, tileGrid) : gray;
 
-    cv::Mat display = gray.clone();
     int k = std::max(1, blur_size) | 1;
     cv::GaussianBlur(display, display, cv::Size(k, k), 1.0);
 
@@ -249,6 +279,8 @@ cv::Mat CracksSize::homography(const cv::Mat& input_gray, float shrink_ratio) {
 // run_detectionの定義
 std::tuple<CracksSize::Result, std::vector<CracksSize::LineInfo>, cv::Mat> CracksSize::run_detection(const cv::Mat& original) {
     // cv::Mat corrected = homography(original);
+    const bool USE_CLAHE = true;
+    const int  TILE_GRID = 13;
     cv::Mat corrected = original.clone();
     if (corrected.empty()) {
         std::cerr << "Projection transform failed.\n";
@@ -259,12 +291,12 @@ std::tuple<CracksSize::Result, std::vector<CracksSize::LineInfo>, cv::Mat> Crack
     // cv::waitKey(0);
     // cv::destroyAllWindows();
 
-    CracksSize::Result best = find_best(corrected);
+    CracksSize::Result best = find_best(corrected, USE_CLAHE, TILE_GRID);
     if (best.num_lines == 0) {
         std::cerr << "No valid result.\n";
         return std::make_tuple(CracksSize::Result{}, std::vector<CracksSize::LineInfo>{}, corrected);
     }
 
-    std::vector<CracksSize::LineInfo> lines = detect_LSD(corrected, best.blur, best.nfa);
+    std::vector<CracksSize::LineInfo> lines = detect_LSD(corrected, best.blur, best.nfa, best.use_clahe, best.clipLimit, best.tileGrid);
     return std::make_tuple(best, lines, corrected);
 }

@@ -48,11 +48,9 @@ public:
 private:
     void update_image_callback(const std::unique_ptr<cv::Mat> msg);
     std::string to_string_with_precision(double value, int precision);
-    cv::Mat putResult(cv::Mat& image, std::string length, std::string width, std::string area);
+    cv::Mat putResult(cv::Mat& image, std::string length, std::string width);
 
     rclcpp::Subscription<MyAdaptedType>::SharedPtr receive_image_;
-    // rclcpp::Publisher<std_msgs::msg::String>::SharedPtr crack_size_publisher_;
-    // rclcpp::Publisher<MyAdaptedType>::SharedPtr result_image_publisher_;
     rclcpp::Publisher<misora2_custom_msg::msg::Custom>::SharedPtr publisher_; // メッセージ型変更
 };
 

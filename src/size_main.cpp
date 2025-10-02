@@ -21,10 +21,11 @@ int main(int argc, char* argv[]) {
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
     std::cout << "detect5 [処理時間] " << duration.count() << " ms\n";
-    CracksSize::draw_lines(corrected, lines, best.blur);
+    CracksSize::draw_lines(corrected, lines, best.blur, best.use_clahe, best.clipLimit, best.tileGrid);
 
     std::cout << "Blur: " << best.blur
-              << ", NFA: " << best.nfa << '\n';
+              << ", NFA: " << best.nfa
+              << ", clipLimit: " << best.clipLimit << '\n';
     std::cout << "Lines: " << best.num_lines << '\n'
               << "Total Length (mm): " << best.total_length << '\n'
               << "Total width (mm): " << best.total_width << '\n';
