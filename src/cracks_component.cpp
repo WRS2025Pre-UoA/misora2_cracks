@@ -48,7 +48,7 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                 if (best.num_lines == 0 || lines.empty()) { // 線を見つけられなかった場合
                     // たった一度の線検出失敗で0と報告していいものだろうか
                     misora2_custom_msg::msg::Custom data;
-                    data.result = "0.000,0.000";
+                    data.result = "CRACKS,0.000,0.000";
                     cv::cvtColor(result_image, result_image, cv::COLOR_RGB2BGR);
                     cv::cvtColor(receive_image, receive_image, cv::COLOR_RGB2BGR);
                     cv::Mat send_image = EvaluateCracks::putResult(result_image, "0.000", "0.000");
@@ -63,11 +63,11 @@ void EvaluateCracks::update_image_callback(const std::unique_ptr<cv::Mat> msg){
                     length = best.total_length;
                     width = best.total_width;
                     
-                    std::string length_S = to_string_with_precision(length,4);
-                    std::string width_S = to_string_with_precision(width,4);
+                    std::string length_S = to_string_with_precision(length,3);
+                    std::string width_S = to_string_with_precision(width,3);
                     
                     misora2_custom_msg::msg::Custom data;
-                    data.result = length_S + "," + width_S;
+                    data.result = "CRACKS," + length_S + "," + width_S;
                     
                     cv::cvtColor(result_image, result_image, cv::COLOR_RGB2BGR);
                     cv::cvtColor(receive_image, receive_image, cv::COLOR_RGB2BGR);
